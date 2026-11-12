@@ -45,7 +45,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libx11-dev lilv-utils lv2-dev \
             libx11-xcb-dev libxcb-util-dev libxcb-cursor-dev libxcb-xkb-dev libxcb-keysyms1-dev \
-            libxkbcommon-dev libxkbcommon-x11-dev libfontconfig1-dev libcairo2-dev libsqlite3-dev \n            libgtkmm-3.0-dev
+            libxkbcommon-dev libxkbcommon-x11-dev libfontconfig1-dev libcairo2-dev libsqlite3-dev \
+            libgtkmm-3.0-dev
 
       - name: Configure
         shell: bash
