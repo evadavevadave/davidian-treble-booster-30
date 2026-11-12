@@ -39,12 +39,13 @@ jobs:
 
       - name: Install Linux packages
         if: runner.os == 'Linux'
-        # X11 for the GUIs, lilv for the LV2 check, and what the VST3 SDK's Linux build asks for.
+        # X11 for the GUIs, lilv for the LV2 check, and what the VST3 SDK's Linux build asks for
+        # (GTK 3 for its example hosts, which include the validator).
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libx11-dev lilv-utils lv2-dev \
             libx11-xcb-dev libxcb-util-dev libxcb-cursor-dev libxcb-xkb-dev libxcb-keysyms1-dev \
-            libxkbcommon-dev libxkbcommon-x11-dev libfontconfig1-dev libcairo2-dev libsqlite3-dev
+            libxkbcommon-dev libxkbcommon-x11-dev libfontconfig1-dev libcairo2-dev libsqlite3-dev \n            libgtkmm-3.0-dev
 
       - name: Configure
         shell: bash
