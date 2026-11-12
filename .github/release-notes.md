@@ -6,8 +6,8 @@ Ready-made **Davidian Treble Booster 30** plugins for Windows, macOS and Linux, 
 |---|---|---|
 | `...-windows-x64.zip` | 64-bit Windows 10 and 11 | VST3 and LV2 |
 | `...-macos-universal.zip` | macOS 10.13 and later, Apple silicon and Intel | Audio Unit, VST3 and LV2 |
-| `...-linux-x64.zip` | 64-bit Linux on x86 (glibc 2.29 or later, such as Ubuntu 20.04 or Debian 11) | VST3 and LV2 |
-| `...-linux-arm64.zip` | 64-bit Linux on ARM, such as a Raspberry Pi 4 or 5 | VST3 and LV2 |
+| `...-linux-x64.zip` | 64-bit Linux on x86: the LV2 needs glibc 2.29 or later (Ubuntu 20.04, Debian 11), the VST3 glibc 2.34 (Ubuntu 22.04, Debian 12) | VST3 and LV2 |
+| `...-linux-arm64.zip` | 64-bit Linux on ARM, such as a Raspberry Pi 4 or 5 (same glibc needs) | VST3 and LV2 |
 
 ## Install
 

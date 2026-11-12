@@ -70,8 +70,8 @@ Ready-built zips for each system come from the GitHub Actions builds (and Releas
 |---|---|---|
 | `...-windows-x64.zip` | 64-bit Windows 10 and 11 | VST3 and LV2 |
 | `...-macos-universal.zip` | macOS 10.13 and later, Apple silicon and Intel | Audio Unit, VST3 and LV2 |
-| `...-linux-x64.zip` | 64-bit Linux on x86 (glibc 2.29 or later) | VST3 and LV2 |
-| `...-linux-arm64.zip` | 64-bit Linux on ARM | VST3 and LV2 |
+| `...-linux-x64.zip` | 64-bit Linux on x86: LV2 needs glibc 2.29 or later (Ubuntu 20.04, Debian 11), VST3 glibc 2.34 (Ubuntu 22.04, Debian 12) | VST3 and LV2 |
+| `...-linux-arm64.zip` | 64-bit Linux on ARM, with the same glibc needs | VST3 and LV2 |
 
 Close your host, then copy the format it uses:
 
