@@ -1,8 +1,8 @@
 # Davidian Treble Booster 30
 
-A circuit-level model of a 1960–61 British three-channel, 30-watt valve amplifier, as LV2, VST3 and Audio Unit plugins
-for Windows, macOS and Linux. It is solved from the manufacturer's works drawing (dated 29-4-60, with modifications to
-8-5-61), component for component: three input channels on ECC83s, a 12AU7 vibrato modulator driven by a phase-shift
+A circuit-level model of a British three-channel, 30-watt valve amplifier, as LV2, VST3 and Audio Unit plugins for
+Windows, macOS and Linux. It is solved from the manufacturer's works drawing, with its listed modifications,
+component for component: three input channels on ECC83s, a 12AU7 vibrato modulator driven by a phase-shift
 oscillator, the Cut control, four cathode-biased EL84s in class A, a valve rectifier that sags, and the output
 transformer into a reactive speaker load.
 

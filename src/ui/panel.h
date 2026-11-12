@@ -196,7 +196,7 @@ static void draw_plate(Canvas* c, float x0, float y0, float x1, float y1)
     static const char* const lines[] = {
         "30 WATTS - FOUR EL84 - CLASS A",
         "12AX7 X4 - 12AU7 - GZ34 RECTIFIER",
-        "CIRCUIT MODEL OF THE 1961 WORKS DRAWING",
+        "CIRCUIT MODEL OF THE WORKS DRAWING",
     };
     const float cx = 0.5f * (x0 + x1);
     int i;
