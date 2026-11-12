@@ -1,0 +1,8 @@
+build/
+build-test/
+build-cmake/
+*.obj
+*.pdb
+*.ilk
+# The reference schematic is a third party's scan; it is not distributed with this project.
+*.jpg

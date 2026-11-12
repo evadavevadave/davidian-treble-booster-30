@@ -1,0 +1,154 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Builds, tests and packages the Treble Booster 30 for Windows, macOS and Linux: LV2 and VST3
+# everywhere, and the Audio Unit on macOS. Every push and pull request gets downloadable builds;
+# a v* tag also publishes a release.
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-x64
+            os: windows-latest
+            configure: -A x64
+          - name: macos-universal
+            os: macos-latest
+            # One bundle for Apple silicon and Intel Macs, macOS 10.13 and later.
+            configure: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
+          - name: linux-x64
+            # The oldest supported runner. The libraries need only glibc 2.29 (Ubuntu 20.04, Debian 11).
+            os: ubuntu-22.04
+          - name: linux-arm64
+            os: ubuntu-22.04-arm
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Linux packages
+        if: runner.os == 'Linux'
+        # X11 for the GUIs, lilv for the LV2 check, and what the VST3 SDK's Linux build asks for.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libx11-dev lilv-utils lv2-dev \
+            libx11-xcb-dev libxcb-util-dev libxcb-cursor-dev libxcb-xkb-dev libxcb-keysyms1-dev \
+            libxkbcommon-dev libxkbcommon-x11-dev libfontconfig1-dev libcairo2-dev libsqlite3-dev
+
+      - name: Configure
+        shell: bash
+        run: cmake -S . -B build-cmake -DCMAKE_BUILD_TYPE=Release ${{ matrix.configure }}
+
+      - name: Build
+        # The VST3 SDK's validator runs on the plugin as part of the build.
+        run: cmake --build build-cmake --config Release --parallel
+
+      - name: Test
+        run: ctest --test-dir build-cmake -C Release --output-on-failure
+
+      - name: Check the bundles
+        shell: bash
+        run: |
+          set -e
+          B=build-cmake/treble30.lv2
+          V="build-cmake/VST3/Release/Davidian Treble Booster 30.vst3"
+          case "$RUNNER_OS" in
+            Windows) EXT=dll; UI=WindowsUI; VBIN="x86_64-win/Davidian Treble Booster 30.vst3" ;;
+            macOS)   EXT=dylib; UI=CocoaUI; VBIN="MacOS/Davidian Treble Booster 30" ;;
+            Linux)   EXT=so; UI=X11UI; VBIN="$(uname -m)-linux/Davidian Treble Booster 30.so" ;;
+          esac
+          for f in treble30.$EXT treble30_ui.$EXT manifest.ttl treble30.ttl LICENSE NOTICE.md AI_USAGE.md; do
+            test -f "$B/$f" || { echo "missing LV2 $f"; exit 1; }
+          done
+          grep -q "ui:$UI" "$B/manifest.ttl"
+          ls -l "$B"
+          for f in "$VBIN" Resources/LICENSE Resources/NOTICE.md Resources/AI_USAGE.md Resources/VST3-SDK-MIT.txt; do
+            test -f "$V/Contents/$f" || { echo "missing VST3 $f"; exit 1; }
+          done
+          ls -lR "$V"
+          if [ "$RUNNER_OS" = macOS ]; then
+            lipo -info "$B/treble30.dylib" "$B/treble30_ui.dylib" "$V/Contents/$VBIN"
+            otool -l "$B/treble30.dylib" | grep -A3 -E "LC_BUILD_VERSION|LC_VERSION_MIN" | head -8
+            C="build-cmake/AU/Davidian Treble Booster 30.component"
+            for f in Info.plist "MacOS/Davidian Treble Booster 30" Resources/LICENSE Resources/NOTICE.md Resources/AI_USAGE.md Resources/Apache-2.0.txt; do
+              test -f "$C/Contents/$f" || { echo "missing AU $f"; exit 1; }
+            done
+            lipo -info "$C/Contents/MacOS/Davidian Treble Booster 30"
+            codesign --verify --verbose "$C"
+            plutil -p "$C/Contents/Info.plist"
+          fi
+          if [ "$RUNNER_OS" = Linux ]; then
+            # The lilv LV2 parser, as hosts use it, on a folder holding only this bundle.
+            mkdir -p "$RUNNER_TEMP/lv2" && cp -r "$B" "$RUNNER_TEMP/lv2/"
+            LV2_PATH="$RUNNER_TEMP/lv2:/usr/lib/lv2:/usr/lib/$(uname -m)-linux-gnu/lv2" lv2info urn:davidian:treble-30 | head -30
+            objdump -T "$B/treble30.so" "$B/treble30_ui.so" "$V/Contents/$VBIN" | grep -E "GLIBC_2\.[0-9]+" -o | sort -uV | tail -1
+          fi
+
+      - name: Validate the Audio Unit with auval
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -e
+          mkdir -p ~/Library/Audio/Plug-Ins/Components
+          cp -R "build-cmake/AU/Davidian Treble Booster 30.component" ~/Library/Audio/Plug-Ins/Components/
+          killall -9 AudioComponentRegistrar 2>/dev/null || true
+          for i in $(seq 1 15); do auval -a 2>/dev/null | grep -q "Tb30 Dvdn" && break; sleep 2; done
+          auval -a | grep "Dvdn"
+          auval -strict -v aufx Tb30 Dvdn
+          # The Intel half of the universal binary, through Rosetta.
+          softwareupdate --install-rosetta --agree-to-license >/dev/null 2>&1 || true
+          arch -x86_64 auval -strict -v aufx Tb30 Dvdn | tail -25
+
+      - name: Package
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          case "$GITHUB_REF" in refs/tags/*) ;; *) VERSION="dev-${GITHUB_SHA::7}" ;; esac
+          ZIP="Davidian-Treble-Booster-30-${VERSION#v}-${{ matrix.name }}.zip"
+          # Every format built for this platform, side by side at the top of the zip.
+          mkdir stage
+          cp -R build-cmake/treble30.lv2 stage/
+          cp -R "build-cmake/VST3/Release/Davidian Treble Booster 30.vst3" stage/
+          if [ "$RUNNER_OS" = macOS ]; then cp -R "build-cmake/AU/Davidian Treble Booster 30.component" stage/; fi
+          (cd stage && cmake -E tar cf "../$ZIP" --format=zip -- *)
+          echo "ZIP=$ZIP" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ env.ZIP }}
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd dist
+          sha256sum *.zip > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          { cat ../.github/release-notes.md; echo; echo '## SHA-256'; echo; echo '```'; cat SHA256SUMS.txt; echo '```'; } > notes.md
+          gh release create "$GITHUB_REF_NAME" *.zip SHA256SUMS.txt \
+            --title "Davidian Treble Booster 30 ${GITHUB_REF_NAME#v}" --notes-file notes.md

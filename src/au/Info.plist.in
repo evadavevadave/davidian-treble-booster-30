@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>@TB_AU_NAME@</string>
+	<key>CFBundleIdentifier</key>
+	<string>@TB_AU_BUNDLE_ID@</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>@TB_AU_NAME@</string>
+	<key>CFBundlePackageType</key>
+	<string>BNDL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>@PROJECT_VERSION@</string>
+	<key>CFBundleVersion</key>
+	<string>@PROJECT_VERSION@</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>@CMAKE_OSX_DEPLOYMENT_TARGET@</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright (C) 2026 Davidian. GPL-3.0-or-later. Made with generative AI (Claude Code).</string>
+	<key>AudioComponents</key>
+	<array>
+		<dict>
+			<key>name</key>
+			<string>Davidian: Treble Booster 30</string>
+			<key>description</key>
+			<string>Three-channel valve amplifier</string>
+			<key>factoryFunction</key>
+			<string>@TB_AU_FACTORY@</string>
+			<key>manufacturer</key>
+			<string>@TB_AU_MANUFACTURER@</string>
+			<key>type</key>
+			<string>aufx</string>
+			<key>subtype</key>
+			<string>@TB_AU_SUBTYPE@</string>
+			<key>version</key>
+			<integer>@TB_AU_VERSION_INT@</integer>
+			<key>sandboxSafe</key>
+			<true/>
+			<key>tags</key>
+			<array>
+				<string>Effects</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
